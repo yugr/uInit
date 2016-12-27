@@ -8,7 +8,8 @@ running daemons or services which eat precious CPU time and pollute caches
 (this is collectively called "OS jitter").
 If that's not enough, hyperthreading and dynamic frequency scaling (DVFS) also add to the jitter
 so in practice you can see up to 5% noise in benchmark runs (e.g. SPEC2000)
-which prevents reliable performance comparisons.
+which prevents reliable performance comparisons (typical compiler
+optimization may yield around 2-3% improvement).
 
 To obtain more or less stable measurements (std. deviation less than 0.5%), you'll need to
 * disable non-deterministic hardware features in BIOS e.g. hyperthreading and frequency scaling (also "power save mode", "turbo mode", "perf boost" and other strange options); note that disabling them in kernel won't work for all kernel versions so BIOS is preferred
