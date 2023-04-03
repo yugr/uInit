@@ -7,13 +7,13 @@
 # * collect a list of modules for your system:
 #     $ lsmod | cut -f1 -d ' ' | tr '\n' ' '
 #   and store resulting list in MODULES variable in this script.
-# * copy to /uSingle
+# * copy to /uInit
 # * press 'Shift' during boot
 # * press 'e' to edit boot string
 # * find line which looks like
 #	linux	/boot/vmlinuz root=... ro splash quiet $vt_handoff
-# and replace starting with splash:
-#   init=/single
+# and replace starting with 'splash':
+#   init=/uInit
 #
 # TODO:
 # * disable unnecessary kernel threads (see check https://www.kernel.org/doc/Documentation/kernel-per-CPU-kthreads.txt)
