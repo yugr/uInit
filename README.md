@@ -1,3 +1,6 @@
+These instructions were meant for older versions of Ubuntu and need to be completely rewritten.
+In particular need to mention running from ramdisks and `isolcpus`/`nohz_full` kernel flags.
+
 # What is this?
 
 uInit is a script and method for obtaining stable benchmarks results
