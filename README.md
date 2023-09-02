@@ -3,6 +3,7 @@ In particular need to mention
   * booting to non-GUI mode on systemd systems (https://linuxconfig.org/how-to-disable-enable-gui-in-ubuntu-22-04-jammy-jellyfish-linux-desktop)
   * running from ramdisks
   * `isolcpus`/`nohz_full` kernel flags.
+  * fixing frequency by setting `scaling_governor` to `performance` if BIOS is not available
 
 # What is this?
 
