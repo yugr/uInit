@@ -1,5 +1,8 @@
 These instructions were meant for older versions of Ubuntu and need to be completely rewritten.
-In particular need to mention running from ramdisks and `isolcpus`/`nohz_full` kernel flags.
+In particular need to mention
+  * booting to non-GUI mode on systemd systems (https://linuxconfig.org/how-to-disable-enable-gui-in-ubuntu-22-04-jammy-jellyfish-linux-desktop)
+  * running from ramdisks
+  * `isolcpus`/`nohz_full` kernel flags.
 
 # What is this?
 
