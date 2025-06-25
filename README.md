@@ -77,7 +77,7 @@ Run benchmarks under `setarch -R ...`.
 
 `Taskset`, `nice`, etc. can be set in `monitor_specrun_wrapper` in SPEC config:
 ```
-monitor_specrun_wrapper = chrt -r 1 taskset 0xff00 nice -20 setarch -R \$command
+monitor_specrun_wrapper = chrt -r 1 taskset 0xff00 nice -n -20 setarch -R \$command
 ```
 
 # Further work
@@ -85,15 +85,7 @@ monitor_specrun_wrapper = chrt -r 1 taskset 0xff00 nice -20 setarch -R \$command
 Above instructions allow to achieve <0.5% noise which is usually enough in practice.
 
 If you want to lower this further, here are some suggestions:
-* consider booting to single-user mode
-* collect counters on a nightly SPEC run via
-
-    ```
-    $ perf record -a
-    ```
-
-  to see what's causing problems
-* set performance scheduler in kernel
+* change scheduling policy for benchmarks (via `chrt(1)`)
 * turn off network via
 
     ```
@@ -102,9 +94,9 @@ If you want to lower this further, here are some suggestions:
     $ systemctl stop networking.service
     ```
 
+* [boot to single-user mode](https://askubuntu.com/questions/132965/how-do-i-boot-into-single-user-mode-from-grub)
 * run from ramdisks
 * examine various platform settings in https://www.spec.org/cpu2006/flags/
 * experiment with performance-related BIOS settings
 * enable Huge Pages in kernel
-* try setting aggressive scheduling policy for benchmarks (via `chrt(1)`)
 * check Linaro's work at https://git.linaro.org/toolchain/spec2xxx-utils.git (although AFAIK they've only got to 1% noise)
