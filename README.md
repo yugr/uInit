@@ -89,7 +89,10 @@ If you want to lower this further, here are some suggestions:
 * turn off network via
 
     ```
-    # Both should work
+    # Ubuntu (note that change is permanent)
+    $ nmcli networking off
+
+    # Didn't work for me
     $ sudo /etc/init.d/networking stop
     $ systemctl stop networking.service
     ```
