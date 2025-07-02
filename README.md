@@ -81,7 +81,7 @@ Run benchmarks under `setarch -R ...`.
 
 `Taskset`, `nice`, etc. can be set in `monitor_specrun_wrapper` in SPEC config:
 ```
-monitor_specrun_wrapper = chrt -r 1 taskset 0xff00 nice -n -20 setarch -R \$command
+monitor_specrun_wrapper = chrt -f 1 taskset 0xff00 nice -n -20 setarch -R \$command
 ```
 
 # Further work
