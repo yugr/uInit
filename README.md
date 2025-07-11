@@ -78,6 +78,32 @@ and run benchmarks under `nice -n -20 ...`.
 
 Run benchmarks under `setarch -R ...`.
 
+## Fix start address of stack
+
+On POSIX systems memory segment that is used for stack is first filled
+with environment variables, then padded to OS-specific alignment and
+finally the aligned address is used as start of the program stack.
+
+Because of this addresses of program's local variables
+may change depending on environment variables even if you've disabled ASLR.
+Some variables, like `$PWD` or `$_`, may vary across benchmark invocations
+and influence results (5% fluctuations are not uncommon for microbenchmarks).
+
+It is thus strongly recommended to run benchmarks that do not rely on
+environment under `env -i`.
+
+## Fix code layout
+
+Due to [intricacies of modern CPU frontends](https://www.bazhenov.me/posts/2024-02-performance-roulette/)
+some benchmarks may be sensitive to particular code layout
+(i.e. offsets of functions and basic blocks)
+produced by compiler and linker. This layout can vary due to unrelated changes
+(e.g. [changing order in which object files are passed to linker](https://dl.acm.org/doi/10.1145/1508244.1508275))
+and complicate performance comparisons.
+
+Although not a full solution, it's recommended to compile C/C++ code with
+`-falign-functions=64` (`-Z min-function-alignment=64` for Rust).
+
 # Running SPEC benchmarks
 
 `Taskset`, `nice`, etc. can be set in `monitor_specrun_wrapper` in SPEC config:
