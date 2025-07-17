@@ -47,7 +47,7 @@ Also add permissions to change scheduling policy for ordinary users:
 ```
 $ sudo setcap cap_sys_nice=ep /usr/bin/chrt
 ```
-(otherwise kernel [will schedule all threads which run under `taskset` on same core](https://serverfault.com/questions/573025/taskset-not-working-over-a-range-of-cores-in-isolcpus), reproduced on Ubuntu 22 kernel 6.8.0-60-generic).
+(otherwise kernel [will schedule all threads which run under `taskset` on same core](https://serverfault.com/questions/573025/taskset-not-working-over-a-range-of-cores-in-isolcpus), [reproduced on Ubuntu 22 and 24](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2116749)).
 
 You can now use `chrt -f 1 taskset 0xff00 ...` to run benchmarks on reserved cores
 (`chrt -r` also works, `chrt -b` does not).
