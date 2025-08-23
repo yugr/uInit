@@ -13,7 +13,9 @@ optimization may yield around 2-3% improvement).
 
 # Ways to reduce noise
 
-To obtain more or less stable measurements (std. deviation less than 0.5%), you'll need to
+Obviously you should not run benchmarks on VMs.
+
+To obtain more or less stable measurements (std. deviation less than 0.5%), you'll also need to
 * disable non-deterministic HW features in BIOS
 * reserve CPU cores for benchmarking (so that OS never touches them)
 * boot in non-GUI mode
