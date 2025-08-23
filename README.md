@@ -116,7 +116,6 @@ monitor_specrun_wrapper = chrt -f 1 taskset 0xff00 nice -n -20 setarch -R \$comm
 Above instructions allow to achieve <0.5% noise which is usually enough in practice.
 
 If you want to lower this further, here are some suggestions:
-* change scheduling policy for benchmarks (via `chrt(1)`)
 * turn off network via
 
     ```
@@ -133,4 +132,3 @@ If you want to lower this further, here are some suggestions:
 * examine various platform settings in https://www.spec.org/cpu2006/flags/
 * experiment with performance-related BIOS settings
 * enable Huge Pages in kernel
-* check Linaro's work at https://git.linaro.org/toolchain/spec2xxx-utils.git (although AFAIK they've only got to 1% noise)
