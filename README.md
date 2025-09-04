@@ -36,7 +36,7 @@ To boot to non-GUI mode on systemd systems see https://linuxconfig.org/how-to-di
 
 Add to `/etc/default/grub`:
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="nohz=on nohz_full=8-15 kthread_cpus=0-7 irqaffinity=0-7 isolcpus=domain,managed_irq,8-15"
+GRUB_CMDLINE_LINUX_DEFAULT="nohz_full=8-15 kthread_cpus=0-7 irqaffinity=0-7 isolcpus=nohz,domain,managed_irq,8-15"
 ```
 (this assumes that cores 0-7 are left to system and 8-15 are reserved for benchmarks).
 The run
@@ -53,6 +53,9 @@ $ sudo setcap cap_sys_nice=ep /usr/bin/chrt
 
 You can now use `chrt -f 1 taskset 0xff00 ...` to run benchmarks on reserved cores
 (`chrt -r` also works, `chrt -b` does not).
+
+When selecting cores to reserve, use `lstopo` to check that
+reserved cores do not share L2/L3 with unreserved ones.
 
 WARNING: if benchmark runs more threads than isolated cores (which e.g. happens
 with Rust benchmarks which rely on `std::thread::available_parallelism`)
@@ -128,9 +131,9 @@ If you want to lower this further, here are some suggestions:
     $ sudo /etc/init.d/networking stop
     $ systemctl stop networking.service
     ```
-
 * [boot to single-user mode](https://askubuntu.com/questions/132965/how-do-i-boot-into-single-user-mode-from-grub)
 * run from ramdisks
 * examine various platform settings in https://www.spec.org/cpu2006/flags/
 * experiment with performance-related BIOS settings
 * enable Huge Pages in kernel
+* use `numactl` to control NUMA affinity
