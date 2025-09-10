@@ -4,16 +4,25 @@ This document contains instructions for setting up systems with Ubuntu distros
 for stable benchmarking.
 
 Modern distributions (e.g. Ubuntu or Debian) have a lot of
-running daemons or services which eat precious CPU time and pollute caches
-(this is collectively called "OS jitter").
+running daemons or services which eat precious CPU time, pollute caches
+and steal DRAM bandwidth (this is collectively called "OS jitter").
 If that's not enough, hyperthreading and dynamic frequency scaling (DVFS) also add to the jitter
 so in practice you can see up to 5% noise in benchmark runs (e.g. SPEC2000)
-which prevents reliable performance comparisons (typical compiler
-optimization may yield around 2-3% improvement).
+which prevents reliable performance comparisons (a typical compiler
+optimization for general-purpose CPU may yield around 2-3% improvement).
+
+Note that recommendations in this guide are for obtaining stable,
+but not necessarily the fastest or even "realistic", measurements.
+Also they are most applicable to SPEC-like
+(userspace, CPU-bound) benchmarks.
+
+I also don't cover multithreading-specific jitter
+(e.g. caused by false sharing and priority inversion).
 
 # Ways to reduce noise
 
-Obviously you should not run benchmarks on VMs.
+Obviously you should run benchmarks on real hardware
+(not cloud server, virtual machine, Docker or WSL).
 
 To obtain more or less stable measurements (std. deviation less than 0.5%), you'll also need to
 * disable non-deterministic HW features in BIOS
@@ -21,6 +30,19 @@ To obtain more or less stable measurements (std. deviation less than 0.5%), you'
 * boot in non-GUI mode
 * disable ASLR and other funky OS features which hurt stability
 * execute your benchmark in special high-perf mode (increased priority, etc.)
+
+## Basics
+
+This section contains some really basic (but sadly often overlooked) recommendations.
+
+If benchmark prints a lot of output to stdout/stderr,
+it should be redirected to file (or `/dev/null`).
+
+Before measuring the time prefer to do several warmup runs
+to populate OS file cache and L1i.
+
+Finally, avoid running other programs in parallel with benchmark
+(including other benchmarks on separate cores).
 
 ## BIOS settings
 
@@ -36,30 +58,46 @@ To boot to non-GUI mode on systemd systems see https://linuxconfig.org/how-to-di
 
 Add to `/etc/default/grub`:
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="nohz_full=8-15 kthread_cpus=0-7 irqaffinity=0-7 isolcpus=nohz,domain,managed_irq,8-15"
+# rcu_nocbs requires kernel built with CONFIG_RCU_NOCB_CPU and
+# nohz_full requires CONFIG_NO_HZ_FULL
+# (default Ubuntu kernels seem to have both)
+GRUB_CMDLINE_LINUX_DEFAULT="nohz_full=8-15 kthread_cpus=0-7 rcu_nocbs=8-15 irqaffinity=0-7 isolcpus=nohz,managed_irq,8-15"
 ```
 (this assumes that cores 0-7 are left to system and 8-15 are reserved for benchmarks).
+
 The run
 ```
 $ sudo update-grub
 ```
 and reboot.
 
-Also add permissions to change scheduling policy for ordinary users:
-```
-$ sudo setcap cap_sys_nice=ep /usr/bin/chrt
-```
-(otherwise kernel [will schedule all threads which run under `taskset` on same core](https://serverfault.com/questions/573025/taskset-not-working-over-a-range-of-cores-in-isolcpus), [reproduced on Ubuntu 22 and 24](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2116749)).
-
-You can now use `chrt -f 1 taskset 0xff00 ...` to run benchmarks on reserved cores
-(`chrt -r` also works, `chrt -b` does not).
+You can now use `taskset 0xff00 ...` to run benchmarks on reserved cores.
 
 When selecting cores to reserve, use `lstopo` to check that
 reserved cores do not share L2/L3 with unreserved ones.
 
-WARNING: if benchmark runs more threads than isolated cores (which e.g. happens
-with Rust benchmarks which rely on `std::thread::available_parallelism`)
+WARNING: if benchmark runs more threads than isolated cores
+(which often happens to Rust programs because they rely on `std::thread::available_parallelism`
+which ignores affinity settings)
 NOISE INCREASES 10x (reproduced on Ubuntu 22 kernel 6.8.0-60-generic).
+
+Additional isolation of cores can be achieved by adding `domain` to
+`isolcpus` setting above but I do not recommend this because
+kernel will then [schedule all benchmark threads on single core](https://serverfault.com/questions/573025/taskset-not-working-over-a-range-of-cores-in-isolcpus)
+([reproduced on Ubuntu 22 and 24](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2116749)).
+
+This can be worked around by using `SCHED_FIFO` or `SCHED_RR` policies.
+
+## Use benchmark-friendly scheduling policy
+
+`SCHED_FIFO` scheduling policy may result in fewer interrupts when running benchmarks.
+
+To enable it, add permissions to change scheduling policy for ordinary users:
+```
+$ sudo setcap cap_sys_nice=ep /usr/bin/chrt
+```
+
+You can then use `chrt -f 1 ...` to enable `SCHED_FIFO`.
 
 ## Fix frequency
 
@@ -108,6 +146,7 @@ and complicate performance comparisons.
 
 Although not a full solution, it's recommended to compile C/C++ code with
 `-falign-functions=64` (`-Z min-function-alignment=64` for Rust).
+Loops may also need to be aligned to fetchline size (via `-falign-loops=N`).
 
 # Running SPEC benchmarks
 
