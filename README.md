@@ -4,7 +4,8 @@ This document contains instructions for setting up systems with Ubuntu distros
 for stable benchmarking.
 
 Modern distributions (e.g. Ubuntu or Debian) have a lot of
-running daemons or services which eat precious CPU time, pollute caches
+running daemons or services which eat precious CPU time
+(each context switch costs 2-3K cycles), pollute caches (D$, I$, TLB, BTB, etc.)
 and steal DRAM bandwidth (this is collectively called "OS jitter").
 If that's not enough, hyperthreading and dynamic frequency scaling (DVFS) also add to the jitter
 so in practice you can see up to 5% noise in benchmark runs (e.g. SPEC2000)
@@ -40,6 +41,12 @@ it should be redirected to file (or `/dev/null`).
 
 Before measuring the time prefer to do several warmup runs
 to populate OS file cache and L1i.
+
+Fix any random numbers in benchmarks that may influence program flow.
+
+Try to measure all compared versions of benchmark on the same day
+(differences in environment temperatures may toggle slightly different
+hardware frequency scaling).
 
 Finally, avoid running other programs in parallel with benchmark
 (including other benchmarks on separate cores).
@@ -108,6 +115,10 @@ $ sleep 120
 $ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 ```
 
+Note that in some situations frequency scaling may still be enforced
+at hardware level to avoid overheating the CPU
+(as e.g. in the [infamous AVX-512 case](https://news.ycombinator.com/item?id=23824053)).
+
 ## Increase priority
 
 Add to `/etc/security/limits.conf`:
@@ -138,6 +149,7 @@ environment under `env -i`.
 ## Fix code layout
 
 Due to [intricacies of modern CPU frontends](https://www.bazhenov.me/posts/2024-02-performance-roulette/)
+(also [here](https://easyperf.net/blog/2018/01/18/Code_alignment_issues))
 some benchmarks may be sensitive to particular code layout
 (i.e. offsets of functions and basic blocks)
 produced by compiler and linker. This layout can vary due to unrelated changes
@@ -159,7 +171,8 @@ monitor_specrun_wrapper = chrt -f 1 taskset 0xff00 nice -n -20 setarch -R \$comm
 
 Above instructions allow to achieve <0.5% noise which is usually enough in practice.
 
-If you want to lower this further, here are some suggestions:
+If you want to lower this further, here are some suggestions
+(I haven't tried them myself though):
 * turn off network via
 
     ```
@@ -176,3 +189,17 @@ If you want to lower this further, here are some suggestions:
 * experiment with performance-related BIOS settings
 * enable Huge Pages in kernel
 * use `numactl` to control NUMA affinity
+* disable thread migration
+* disable returning memory to system in Glibc
+  - `export M_MMAP_MAX=0 M_ARENA_MAX=1 M_TRIM_THRESHOLD=-1`
+* disable irqbalancer (`IRQBALANCE_BANNED_CPULIST`)
+* disable watchdogs
+  - `nmi_watchdog=0 nowatchdog nosoftlockup`
+* disable kernel hardening (`pti=off`, etc.)
+
+# Additional readings
+
+* Technical Itch: Reducing system jitter: [part 1](https://epickrram.blogspot.com/2015/09/reducing-system-jitter.html)
+  and [part 2](https://epickrram.blogspot.com/2015/11/reducing-system-jitter-part-2.html)
+* [Interference-free Operating System](https://arxiv.org/abs/2412.18104)
+* [LinuxCNC latency and jitter improvements with PREEMPT_RT kernel parameter tuning](https://dantalion.nl/2024/09/29/linuxcnc-latency-jitter-kernel-parameter-tuning.html)
