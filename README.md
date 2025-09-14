@@ -18,7 +18,8 @@ Also they are most applicable to SPEC-like
 (userspace, CPU-bound) benchmarks.
 
 I also don't cover multithreading-specific jitter
-(e.g. caused by false sharing and priority inversion).
+(e.g. caused by [false sharing](https://www.reddit.com/r/rust/comments/17z7eha/false_sharing_can_happen_to_you_too/)
+or priority inversion).
 
 # Ways to reduce noise
 
