@@ -51,6 +51,7 @@ hardware frequency scaling).
 
 Finally, avoid running other programs in parallel with benchmark
 (including other benchmarks on separate cores).
+In particular, disable cronjobs.
 
 ## BIOS settings
 
@@ -61,6 +62,30 @@ Disable frequency scaling (sometimes called "power save mode", "turbo mode", "pe
 
 To boot to non-GUI mode on systemd systems see https://linuxconfig.org/how-to-disable-enable-gui-in-ubuntu-22-04-jammy-jellyfish-linux-desktop
 (`sudo init 1` otherwise).
+
+## Disable unnecessary services
+
+Even non-GUI multi-user mode modern distros will execute a lot of services
+which may distort your measurements.
+
+For systemd distroes a list of active services can be obtained via
+```
+$ systemctl list-units --all
+```
+(look for anything `active` or `waiting`).
+
+You can check for services which actually cause problems on _your_ system by running
+```
+$ script -qefc 'top -cbd3' > top.log
+# Wait for several hours
+$ grep -A2 CPU top.log | awk '{$1=$2=$3=$4=$5=$6=$7=$8=$10=$11=""; print $0}' | grep -v 'CPU\|^$' | sed 's/^ *//'
+```
+and then disable them via `sudo systemctl stop ...`.
+
+On typical Ubuntu desktop I suggest disabling at least
+```
+systemctl stop apt-daily* unattended-upgrades* update-notifier* fwupd* snapd* irqbalance* {systemd-oomd,udisks2,polkit}.service
+```
 
 ## Reserve cores for benchmarking
 
@@ -145,7 +170,9 @@ Some variables, like `$PWD` or `$_`, may vary across benchmark invocations
 and influence results (5% fluctuations are not uncommon for microbenchmarks).
 
 It is thus strongly recommended to run benchmarks that do not rely on
-environment under `env -i`.
+environment under `env -i`
+(`hyperfine` runs benchmarks with [randomized environment](https://github.com/sharkdp/hyperfine/issues/235)
+for this reason).
 
 ## Fix code layout
 
@@ -185,6 +212,7 @@ If you want to lower this further, here are some suggestions
     $ systemctl stop networking.service
     ```
 * [boot to single-user mode](https://askubuntu.com/questions/132965/how-do-i-boot-into-single-user-mode-from-grub)
+  - this would also disable networking
 * run from ramdisks
 * examine various platform settings in https://www.spec.org/cpu2006/flags/
 * experiment with performance-related BIOS settings
