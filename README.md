@@ -68,13 +68,13 @@ To boot to non-GUI mode on systemd systems see https://linuxconfig.org/how-to-di
 Even non-GUI multi-user mode modern distros will execute a lot of services
 which may distort your measurements.
 
-For systemd distroes a list of active services can be obtained via
+For systemd distros a list of active services can be obtained via
 ```
 $ systemctl list-units --all
 ```
 (look for anything `active` or `waiting`).
 
-You can check for services which actually cause problems on _your_ system by running
+You can identify services which actually cause problems on _your_ system by running
 ```
 $ script -qefc 'top -cbd3' > top.log
 # Wait for several hours
@@ -84,7 +84,7 @@ and then disable them via `sudo systemctl stop ...`.
 
 On typical Ubuntu desktop I suggest disabling at least
 ```
-systemctl stop apt-daily* unattended-upgrades* update-notifier* fwupd* snapd* irqbalance* {systemd-oomd,udisks2,polkit}.service
+$ systemctl stop apt-daily* unattended-upgrades* update-notifier* fwupd* snapd* irqbalance* {systemd-oomd,udisks2,polkit}.service
 ```
 
 ## Reserve cores for benchmarking
