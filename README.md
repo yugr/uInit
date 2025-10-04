@@ -50,7 +50,7 @@ Try to measure all compared versions of benchmark on the same day
 hardware frequency scaling).
 
 Finally, avoid running other programs in parallel with benchmark
-(including other benchmarks on separate cores).
+(including other benchmarks on separate cores, `top`/`htop`, etc.).
 In particular, disable cronjobs.
 
 ## BIOS settings
@@ -86,6 +86,8 @@ On typical Ubuntu desktop I suggest disabling at least
 ```
 $ systemctl stop apt-daily* unattended-upgrades* update-notifier* fwupd* snapd* irqbalance* {systemd-oomd,udisks2,polkit}.service
 ```
+
+TODO: avahi-daemon ?
 
 ## Reserve cores for benchmarking
 
