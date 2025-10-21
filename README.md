@@ -84,7 +84,7 @@ and then disable them via `sudo systemctl stop ...`.
 
 On typical Ubuntu desktop I suggest disabling at least
 ```
-$ systemctl stop apt-daily* unattended-upgrades* update-notifier* fwupd* snapd* irqbalance* {systemd-oomd,udisks2,polkit}.service
+$ systemctl stop apt-daily* dpkg* unattended-upgrades* update-notifier* fwupd* snapd* irqbalance* cups* {systemd-oomd,udisks2,polkit}.service
 ```
 
 TODO: avahi-daemon ?
