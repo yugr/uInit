@@ -6,7 +6,7 @@ for stable benchmarking.
 Modern distributions (e.g. Ubuntu or Debian) have a lot of
 running daemons or services which eat precious CPU time
 (each context switch costs 2-3K cycles), pollute caches (D$, I$, TLB, BTB, etc.)
-and steal DRAM bandwidth (this is collectively called "OS jitter").
+and steal DRAM/L3 bandwidth (this is collectively called "OS jitter").
 If that's not enough, hyperthreading and dynamic frequency scaling (DVFS) also add to the jitter
 so in practice you can see up to 5% noise in benchmark runs (e.g. SPEC2000)
 which prevents reliable performance comparisons (a typical compiler
@@ -80,7 +80,7 @@ $ script -qefc 'top -cbd3' > top.log
 # Wait for several hours
 $ grep -A2 CPU top.log | awk '{$1=$2=$3=$4=$5=$6=$7=$8=$10=$11=""; print $0}' | grep -v 'CPU\|^$' | sed 's/^ *//'
 ```
-and then disable them via `sudo systemctl stop ...`.
+and then disable them via `sudo systemctl mask ...`.
 
 On typical Ubuntu desktop I suggest disabling at least
 ```
