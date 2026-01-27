@@ -142,10 +142,20 @@ Set scaling governor to `performance` via
 $ sleep 120
 $ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 ```
+and disable Turbo Boost:
+```
+$ echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+```
 
 Note that in some situations frequency scaling may still be enforced
 at hardware level to avoid overheating the CPU
 (as e.g. in the [infamous AVX-512 case](https://news.ycombinator.com/item?id=23824053)).
+
+It's also recommended to reduce working frequency to avoid it being reduced under heavy load:
+```
+# Set XXX to 70-80% of peak
+$ echo XXX | sudo tee /sys/devices/system/cpu/*/cpufreq/scaling_min_freq /sys/devices/system/cpu/*/cpufreq/scaling_max_freq
+```
 
 ## Increase priority
 
