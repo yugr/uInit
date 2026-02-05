@@ -213,6 +213,7 @@ Above instructions allow to achieve <0.5% noise which is usually enough in pract
 
 If you want to lower this further, here are some suggestions
 (I haven't tried them myself though):
+* use transparent Huge Pages (to reduce TLB pressure)
 * turn off network via
 
     ```
@@ -228,7 +229,6 @@ If you want to lower this further, here are some suggestions
 * run from ramdisks
 * examine various platform settings in https://www.spec.org/cpu2006/flags/
 * experiment with performance-related BIOS settings
-* enable Huge Pages in kernel
 * use `numactl` to control NUMA affinity
 * disable thread migration
 * disable returning memory to system in Glibc
