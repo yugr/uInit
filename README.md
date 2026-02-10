@@ -232,6 +232,7 @@ If you want to lower this further, here are some suggestions
 * use `numactl` to control NUMA affinity
 * disable thread migration
 * disable returning memory to system in Glibc
+  (to avoid e.g. [TLB shootdowns](https://github.com/bitcharmer/tlb_shootdowns))
   - `export M_MMAP_MAX=0 M_ARENA_MAX=1 M_TRIM_THRESHOLD=-1`
 * disable irqbalancer (`IRQBALANCE_BANNED_CPULIST`)
 * disable watchdogs
