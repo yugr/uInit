@@ -55,8 +55,9 @@ In particular, disable cronjobs.
 
 ## BIOS settings
 
-Disable frequency scaling (sometimes called "power save mode", "turbo mode", "perf boost", etc.), hyperthreading, HW prefetching, Turbo Boost, Intel Speed Shift and Speed Step, ctates, etc. in BIOS settings.
- e.g. hyperthreading and frequency scaling ; note that disabling them in kernel won't work for all kernel versions so BIOS is preferred
+Disable frequency scaling (sometimes called "power save mode", "turbo mode", "perf boost", etc.),
+hyperthreading, HW prefetching, Turbo Boost, Intel Speed Shift and Speed Step, C-states, etc. in BIOS settings.
+Note that disabling them in kernel won't work for all kernel versions so BIOS is preferred.
 
 ## Run in non-GUI mode
 
@@ -135,6 +136,12 @@ $ sudo setcap cap_sys_nice=ep /usr/bin/chrt
 You can then use `chrt -f 1 ...` to enable `SCHED_FIFO`.
 
 ## Fix frequency
+
+Disable C-states in kernel by adding `intel_idle.max_cstate=0 processor.max_cstate=0`
+to `GRUB_CMDLINE_LINUX_DEFAULT` in `/etc/default/grub` and running
+```
+$ sudo update-grub
+```
 
 Set scaling governor to `performance` via
 ```
