@@ -101,7 +101,7 @@ GRUB_CMDLINE_LINUX_DEFAULT="nohz_full=8-15 kthread_cpus=0-7 rcu_nocbs=8-15 irqaf
 ```
 (this assumes that cores 0-7 are left to system and 8-15 are reserved for benchmarks).
 
-The run
+Then run
 ```
 $ sudo update-grub
 ```
@@ -137,11 +137,15 @@ You can then use `chrt -f 1 ...` to enable `SCHED_FIFO`.
 
 ## Fix frequency
 
-Disable C-states in kernel by adding `intel_idle.max_cstate=0 processor.max_cstate=0`
-to `GRUB_CMDLINE_LINUX_DEFAULT` in `/etc/default/grub` and running
+Disable C-states by adding to `/etc/default/grub`:
+```
+GRUB_CMDLINE_LINUX_DEFAULT="... intel_idle.max_cstate=0 processor.max_cstate=0"
+```
+running
 ```
 $ sudo update-grub
 ```
+and rebooting.
 
 Set scaling governor to `performance` via
 ```
