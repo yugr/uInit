@@ -55,7 +55,7 @@ In particular, disable cronjobs.
 
 ## BIOS settings
 
-Disable frequency scaling (sometimes called "power save mode", "turbo mode", "perf boost", etc.), hyperthreading, HW prefetching, Turbo Boost, Intel Speed Shift, etc. in BIOS settings.
+Disable frequency scaling (sometimes called "power save mode", "turbo mode", "perf boost", etc.), hyperthreading, HW prefetching, Turbo Boost, Intel Speed Shift and Speed Step, ctates, etc. in BIOS settings.
  e.g. hyperthreading and frequency scaling ; note that disabling them in kernel won't work for all kernel versions so BIOS is preferred
 
 ## Run in non-GUI mode
