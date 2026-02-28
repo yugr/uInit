@@ -79,7 +79,7 @@ You can identify services which actually cause problems on _your_ system by runn
 ```
 $ script -qefc 'top -cbd3' > top.log
 # Wait for several hours
-$ grep -A2 CPU top.log | awk '{$1=$2=$3=$4=$5=$6=$7=$8=$10=$11=""; print $0}' | grep -v 'CPU\|^$' | sed 's/^ *//'
+$ grep -A2 CPU top.log | awk '{$1=$2=$3=$4=$5=$6=$7=$8=$10=$11=""; print $0}' | grep -v 'CPU\|^$\|\<script ' | sed 's/^ *//'
 ```
 and then disable them via `sudo systemctl mask ...`.
 
