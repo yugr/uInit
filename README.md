@@ -91,10 +91,16 @@ and then disable them via `sudo systemctl mask ...`.
 
 On typical Ubuntu desktop I suggest disabling at least
 ```
-$ UNITS=$(systemctl list-units --all --plain | awk '/^(apt-daily|dpkg|unattended-upgrades|update-notifier|cron|anacron|avahi|fwupd|man-db|snapd|irqbalance|cups|systemd-oomd|udisks2|logrotate)/{print $1}')
+$ UNITS=$(systemctl list-units --all --plain | awk '/^(apt-daily|dpkg|unattended-upgrades|update-notifier|cron|anacron|avahi|fwupd|man-db|snapd|irqbalance|cups|systemd-oomd|udisks2|logrotate|motd-news)/{print $1}')
 $ sudo systemctl mask $UNITS
 ```
 (note that simply stopping them is not enough).
+
+Also check timers
+```
+$ systemctl list-timers --all
+```
+and disable unneeded.
 
 ## Reserve cores for benchmarking
 
