@@ -29,7 +29,8 @@ Obviously you should run benchmarks on real hardware
 For remote servers be sure to use non-standard SSH port and
 disable password authentication to avoid SSH scanning overheads
 (see e.g. [this](https://github.com/yugr/scripts-and-dotfiles/blob/master/REMOTE_SERVER.md)
-for details).
+for details). Try to avoid tools like `fail2ban` because
+they may introduce additonal noise.
 
 To obtain more or less stable measurements (std. deviation less than 0.5%), you'll also need to
 * disable non-deterministic HW features in BIOS
