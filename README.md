@@ -26,6 +26,11 @@ or priority inversion).
 Obviously you should run benchmarks on real hardware
 (not cloud server, virtual machine, Docker or WSL).
 
+For remote servers be sure to use non-standard SSH port and
+disable password authentication to avoid SSH scanning overheads
+(see e.g. [this](https://github.com/yugr/scripts-and-dotfiles/blob/master/REMOTE_SERVER.md)
+for details).
+
 To obtain more or less stable measurements (std. deviation less than 0.5%), you'll also need to
 * disable non-deterministic HW features in BIOS
 * reserve CPU cores for benchmarking (so that OS never touches them)
@@ -79,7 +84,7 @@ You can identify services which actually cause problems on _your_ system by runn
 ```
 $ script -qefc 'top -cbd3' > top.log
 # Wait for several hours
-$ grep -A2 CPU top.log | awk '{$1=$2=$3=$4=$5=$6=$7=$8=$10=$11=""; print $0}' | grep -v 'CPU\|^$\|\<script ' | sed 's/^ *//'
+$ grep -A2 CPU top.log | awk '{$1=$2=$3=$4=$5=$6=$7=$8=$10=$11=""; print $0}' | grep -v 'CPU\|^$\|\<script \|\<top \|^ *0\.0' | sed 's/^ *//'
 ```
 and then disable them via `sudo systemctl mask ...`.
 
