@@ -172,7 +172,7 @@ $ echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_gover
 ```
 and reduce operating frequency to avoid it being reduced under heavy load:
 ```
-# Set XXX to 70-80% of peak
+# Set XXX to 70-80% of peak (may need to match one of scaling_available_frequencies)
 $ echo XXX | sudo tee /sys/devices/system/cpu/*/cpufreq/scaling_min_freq /sys/devices/system/cpu/*/cpufreq/scaling_max_freq
 ```
 
@@ -236,6 +236,8 @@ Above instructions allow to achieve <0.5% noise which is usually enough in pract
 
 If you want to lower this further, here are some suggestions
 (I haven't tried them myself though):
+* [custom init script](https://github.com/tarantool/tarantool/wiki/Benchmarking#prepare-the-os-environment)
+* [OSNOISE tracer](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/trace/osnoise-tracer.rst)
 * use transparent Huge Pages (to reduce TLB pressure)
 * turn off network via
 
