@@ -102,6 +102,8 @@ $ systemctl list-timers --all
 ```
 and disable unneeded.
 
+For RAID servers disable `mdcheck_start` which has rare but extremely high overhead.
+
 ## Reserve cores for benchmarking
 
 Add to `/etc/default/grub`:
