@@ -219,7 +219,8 @@ Due to [intricacies of modern CPU frontends](https://www.bazhenov.me/posts/2024-
 some benchmarks may be sensitive to particular code layout
 (i.e. offsets of functions and basic blocks)
 produced by compiler and linker. This layout can vary due to unrelated changes
-(e.g. [changing order in which object files are passed to linker](https://dl.acm.org/doi/10.1145/1508244.1508275))
+(e.g. [changing order in which object files are passed to linker](https://dl.acm.org/doi/10.1145/1508244.1508275)
+or changes in register allocations which have [different encoding sizes on x86](https://eklitzke.org/x86-register-encoding))
 and complicate performance comparisons.
 
 Although not a full solution, it's recommended to compile C/C++ code with
