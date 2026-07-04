@@ -51,9 +51,10 @@ to populate OS file cache and L1i.
 
 Fix any random numbers in benchmarks that may influence program flow.
 
-Try to measure all compared versions of benchmark on the same day
-(differences in environment temperatures may toggle slightly different
-hardware frequency scaling).
+Try to collect benchmark results that will be compared on the same day (and time of day)
+because environment temperature variations may cause 1-2% performance drift
+due to hardware frequency scaling (there is a lot of anecdotal evidence,
+see e.g. "The Llama 3 Herd of Models" paper).
 
 Finally, avoid running other programs in parallel with benchmark
 (including other benchmarks on separate cores, `top`/`htop`, etc.).
