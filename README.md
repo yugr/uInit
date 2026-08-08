@@ -5,10 +5,10 @@ for stable benchmarking.
 
 Modern distributions (e.g. Ubuntu or Debian) have a lot of
 running daemons or services which eat precious CPU time
-(each context switch costs 2-3K cycles), pollute caches (D$, I$, TLB, BTB, etc.)
+(each context switch costs thousands of cycles), pollute caches (D$, I$, TLB, BTB, etc.)
 and steal DRAM/L3 bandwidth (this is collectively called "OS jitter").
-If that's not enough, hyperthreading and dynamic frequency scaling (DVFS) also add to the jitter
-so in practice you can see up to 5% noise in benchmark runs (e.g. SPEC2000)
+If that's not enough, hyperthreading, dynamic frequency scaling (DVFS) and temperature throttling
+also add to the jitter so in practice you can see up to 5% noise in benchmark runs (e.g. SPEC2000)
 which prevents reliable performance comparisons (a typical compiler
 optimization for general-purpose CPU may yield around 2-3% improvement).
 
@@ -63,7 +63,8 @@ In particular, disable cronjobs.
 ## BIOS settings
 
 Disable frequency scaling (sometimes called "power save mode", "turbo mode", "perf boost", etc.),
-hyperthreading, HW prefetching, Turbo Boost, Intel Speed Shift and Speed Step, C-states, etc. in BIOS settings.
+hyperthreading, HW prefetching, Turbo Boost, Intel Speed Shift and Speed Step, C-states,
+Core Performance Boost, PowerNow!, Extended Frequency, etc. in BIOS settings.
 Note that disabling them in kernel won't work for all kernel versions so BIOS is preferred.
 
 ## Run in non-GUI mode
@@ -106,11 +107,20 @@ and disable unneeded.
 For RAID servers disable `mdcheck_start` and `mdcheck_continue`
 which have rare but extremely high overhead.
 
+## Disable THP
+
+Transparent Huge Pages may introduce performance spikes due to khugepaged stalls so
+should better be disabled:
+```
+$ echo never | sudo tee /sys/kernel/mm/transparent_hugepage/{enable,defrag}
+```
+This can also be configured at startup via GRUB kernel parameter `transparent_hugepage=never`.
+
 ## Reserve cores for benchmarking
 
 Add to `/etc/default/grub`:
 ```
-# rcu_nocbs requires kernel built with CONFIG_RCU_NOCB_CPU and
+# rcu_nocbs requires kernel built with CONFIG_RCU_NOCB_CPU
 # nohz_full requires CONFIG_NO_HZ_FULL
 # (default Ubuntu kernels seem to have both)
 GRUB_CMDLINE_LINUX_DEFAULT="nohz_full=8-15 kthread_cpus=0-7 rcu_nocbs=8-15 irqaffinity=0-7 isolcpus=nohz,managed_irq,8-15"
@@ -155,7 +165,8 @@ You can then use `chrt -f 1 ...` to enable `SCHED_FIFO`.
 
 Disable C-states by adding to `/etc/default/grub`:
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="... intel_idle.max_cstate=0 processor.max_cstate=0"
+# max_cstate=0 may have side effects
+GRUB_CMDLINE_LINUX_DEFAULT="... intel_idle.max_cstate=1 processor.max_cstate=1"
 ```
 running
 ```
@@ -167,6 +178,11 @@ Also disable P-states (Turbo Boost) via
 ```
 $ echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 ```
+for Intel or
+```
+$ echo 0 | sudo tee /sys/devices/system/cpu/cpufreq/boost
+```
+for AMD.
 
 Finally set scaling governor to `performance` via
 ```
@@ -228,6 +244,18 @@ Although not a full solution, it's recommended to compile C/C++ code with
 `-falign-functions=64` (`-Z min-function-alignment=64` for Rust).
 Loops may also need to be aligned to fetchline size (via `-falign-loops=N`).
 
+## Ensure memory locality
+
+Performance on systems with NUMA memory may depend on CPU/memory affinity.
+By default Linux tries to match allocated memory to CPU but this can also be ensured via
+```
+# Verify your NUMA topology
+$ numactl --hardware
+
+# Pin benchmark's memory
+$ numactl --cpunodebind=0 --membind=0 ./mybench
+```
+
 # Running SPEC benchmarks
 
 `Taskset`, `nice`, etc. can be set in `monitor_specrun_wrapper` in SPEC config:
@@ -243,7 +271,7 @@ If you want to lower this further, here are some suggestions
 (I haven't tried them myself though):
 * [custom init script](https://github.com/tarantool/tarantool/wiki/Benchmarking#prepare-the-os-environment)
 * [OSNOISE tracer](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/trace/osnoise-tracer.rst)
-* use transparent Huge Pages (to reduce TLB pressure)
+* CPU shienlding (via `cset`)
 * turn off network via
 
     ```
@@ -274,4 +302,4 @@ If you want to lower this further, here are some suggestions
 * Technical Itch: Reducing system jitter: [part 1](https://epickrram.blogspot.com/2015/09/reducing-system-jitter.html)
   and [part 2](https://epickrram.blogspot.com/2015/11/reducing-system-jitter-part-2.html)
 * [Interference-free Operating System](https://arxiv.org/abs/2412.18104)
-* [LinuxCNC latency and jitter improvements with PREEMPT_RT kernel parameter tuning](https://dantalion.nl/2024/09/29/linuxcnc-latency-jitter-kernel-parameter-tuning.html)
+* [LinuxCNC latency and jitter improvements with PREEMPT_RT kernel parameter tuning](https://dantalion.nl/2024/09/29/linuxcnc-latency-jitter-kernel-parameter-tuning.html) ([WebArchive](https://web.archive.org/web/20260510231613/https://dantalion.nl/2024/09/29/linuxcnc-latency-jitter-kernel-parameter-tuning.html))
