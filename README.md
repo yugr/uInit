@@ -21,6 +21,8 @@ I also don't cover multithreading-specific jitter
 (e.g. caused by [false sharing](https://www.reddit.com/r/rust/comments/17z7eha/false_sharing_can_happen_to_you_too/)
 or priority inversion).
 
+WARNING: some settings (like `sudo init 1`) may lock you off a remote server !
+
 # Ways to reduce noise
 
 Obviously you should run benchmarks on real hardware
@@ -49,7 +51,9 @@ it should be redirected to file (or `/dev/null`).
 Before measuring the time prefer to do several warmup runs
 to populate OS file cache and L1i.
 
-Fix any random numbers in benchmarks that may influence program flow.
+Fix any random numbers in benchmarks that may influence program flow
+(by using environment variables like `PYTHONHASHSEED`,
+overriding `/dev/{urandom,random}` reads via `LD_PRELOAD`, etc.).
 
 Try to collect benchmark results that will be compared on the same day (and time of day)
 because environment temperature variations may cause 1-2% performance drift
@@ -222,12 +226,15 @@ finally the aligned address is used as start of the program stack.
 Because of this addresses of program's local variables
 may change depending on environment variables even if you've disabled ASLR.
 Some variables, like `$PWD` or `$_`, may vary across benchmark invocations
-and influence results (5% fluctuations are not uncommon for microbenchmarks).
+and influence results (5% fluctuations are not uncommon for microbenchmarks,
+see [Producing Wrong Data Without Doing Anything Obviously Wrong](https://dl.acm.org/doi/10.1145/1508284.1508275)
+for more details).
 
 It is thus strongly recommended to run benchmarks that do not rely on
-environment under `env -i`
-(`hyperfine` runs benchmarks with [randomized environment](https://github.com/sharkdp/hyperfine/issues/235)
-for this reason).
+environment under `env -i` (explicitly passing system variables like
+`PATH`, `LD_LIBRARY_PATH`, etc. if needed).
+`hyperfine` runs benchmarks with [randomized environment](https://github.com/sharkdp/hyperfine/issues/235)
+to average effects of the environment size.
 
 ## Fix code layout
 
@@ -269,9 +276,13 @@ Above instructions allow to achieve <0.5% noise which is usually enough in pract
 
 If you want to lower this further, here are some suggestions
 (I haven't tried them myself though):
+* utilize `turbostat` to verify performance settings and noise levels
 * [custom init script](https://github.com/tarantool/tarantool/wiki/Benchmarking#prepare-the-os-environment)
 * [OSNOISE tracer](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/trace/osnoise-tracer.rst)
-* CPU shienlding (via `cset`)
+* CPU shielding (via `cset`)
+* disable more services (`rsyslog`, `systemd-journald`)
+* program path length effects (can't be fixed by `env -i`)
+* aggressive CPU polling via `idle=poll` kernel parameter
 * turn off network via
 
     ```
@@ -291,11 +302,11 @@ If you want to lower this further, here are some suggestions
 * disable thread migration
 * disable returning memory to system in Glibc
   (to avoid e.g. [TLB shootdowns](https://github.com/bitcharmer/tlb_shootdowns))
-  - `export M_MMAP_MAX=0 M_ARENA_MAX=1 M_TRIM_THRESHOLD=-1`
-* disable irqbalancer (`IRQBALANCE_BANNED_CPULIST`)
+  - `export MALLOC_MMAP_MAX_=0 MALLOC_ARENA_MAX=1 M_TRIM_THRESHOLD_=-1`
 * disable watchdogs
   - `nmi_watchdog=0 nowatchdog nosoftlockup`
 * disable kernel hardening (`pti=off`, etc.)
+* overhead from low-level System Management Interrupts and ECC scrubbing in COTS servers
 
 # Additional readings
 
