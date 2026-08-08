@@ -53,7 +53,7 @@ to populate OS file cache and L1i.
 
 Fix any random numbers in benchmarks that may influence program flow
 (by using environment variables like `PYTHONHASHSEED`,
-overriding `/dev/{urandom,random}` reads via `LD_PRELOAD`, etc.).
+overriding `/dev/{urandom,random}` reads and/or `AT_RANDOM` via `LD_PRELOAD`, etc.).
 
 Try to collect benchmark results that will be compared on the same day (and time of day)
 because environment temperature variations may cause 1-2% performance drift
@@ -220,21 +220,30 @@ Run benchmarks under `setarch -R ...`.
 ## Fix start address of stack
 
 On POSIX systems memory segment that is used for stack is first filled
-with environment variables, then padded to OS-specific alignment and
+with environment variables (`envp[]`), process name and arguments (`argv[]`),
+then padded to OS-specific alignment and
 finally the aligned address is used as start of the program stack.
 
 Because of this addresses of program's local variables
 may change depending on environment variables even if you've disabled ASLR.
-Some variables, like `$PWD` or `$_`, may vary across benchmark invocations
+Some variables, like `argv[0]`, `$PWD` or `$_`, may vary across benchmark invocations
 and influence results (5% fluctuations are not uncommon for microbenchmarks,
 see [Producing Wrong Data Without Doing Anything Obviously Wrong](https://dl.acm.org/doi/10.1145/1508284.1508275)
 for more details).
 
-It is thus strongly recommended to run benchmarks that do not rely on
-environment under `env -i` (explicitly passing system variables like
-`PATH`, `LD_LIBRARY_PATH`, etc. if needed).
-`hyperfine` runs benchmarks with [randomized environment](https://github.com/sharkdp/hyperfine/issues/235)
-to average effects of the environment size.
+This issue can be solved in two different ways:
+  - run benchmark in many modified environments and average results
+    (e.g. `hyperfine` runs benchmarks with [randomized environment](https://github.com/sharkdp/hyperfine/issues/235))
+  - strictly control environment size
+
+For the latter you will have to ensure that environment and arguments
+(includeing length of executable path) are the same
+in both reference and optimized runs.
+Environment can be controlled via `env -i`
+(explicitly passing system variables like `PATH`, `LD_LIBRARY_PATH`,
+etc. if needed).
+
+TODO: compiling `main()` with `-mpreferred-stack-boundary=12` should also guarantee stack alignment
 
 ## Fix code layout
 
@@ -283,6 +292,7 @@ If you want to lower this further, here are some suggestions
 * disable more services (`rsyslog`, `systemd-journald`)
 * program path length effects (can't be fixed by `env -i`)
 * aggressive CPU polling via `idle=poll` kernel parameter
+* overhead from low-level System Management Interrupts and ECC scrubbing in COTS servers
 * turn off network via
 
     ```
@@ -297,16 +307,12 @@ If you want to lower this further, here are some suggestions
   - this would also disable networking
 * run from ramdisks
 * examine various platform settings in https://www.spec.org/cpu2006/flags/
-* experiment with performance-related BIOS settings
-* use `numactl` to control NUMA affinity
 * disable thread migration
 * disable returning memory to system in Glibc
   (to avoid e.g. [TLB shootdowns](https://github.com/bitcharmer/tlb_shootdowns))
   - `export MALLOC_MMAP_MAX_=0 MALLOC_ARENA_MAX=1 M_TRIM_THRESHOLD_=-1`
-* disable watchdogs
-  - `nmi_watchdog=0 nowatchdog nosoftlockup`
+* disable watchdogs (`nmi_watchdog=0 nowatchdog nosoftlockup`)
 * disable kernel hardening (`pti=off`, etc.)
-* overhead from low-level System Management Interrupts and ECC scrubbing in COTS servers
 
 # Additional readings
 
